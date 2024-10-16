@@ -1,6 +1,5 @@
 name: Deploy React App to EC2
 
-# Trigger the workflow when code is pushed to the main branch
 on:
   push:
     branches:
@@ -18,8 +17,16 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@35.171.166.147 "cd /home/ec2-user/security-checks && git pull origin main && npm install && npm run build && sudo systemctl restart nginx"
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@35.171.166.147 "
+          sudo chown -R ec2-user:ec2-user /home/ec2-user/security-checks && \
+          git config --global --add safe.directory /home/ec2-user/security-checks && \
+          cd /home/ec2-user/security-checks && \
+          git pull origin main && \
+          npm install && \
+          npm run build && \
+          npm install -g serve && \
+          serve -s build -l 3000 &"
