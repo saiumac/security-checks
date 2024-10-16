@@ -21,7 +21,7 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@18.234.39.29 "
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@52.91.112.248 "
           sudo chown -R ec2-user:ec2-user /home/ec2-user/security-checks && \
           git config --global --add safe.directory /home/ec2-user/security-checks && \
           cd /home/ec2-user/security-checks && \
