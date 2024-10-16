@@ -1,4 +1,4 @@
-name: Deploy React App to EC2
+name: Deploy React App to EC2 with Security Checks
 
 on:
   push:
@@ -13,12 +13,29 @@ jobs:
     - name: Checkout the code
       uses: actions/checkout@v2
 
+    # Run npm audit to check for vulnerabilities in dependencies
+    - name: Run security audit
+      run: |
+        npm audit --audit-level=high
+
+    # Apply npm audit fix
+    - name: Fix vulnerabilities
+      run: |
+        npm audit fix --force
+
+    # Run ESLint to check for coding and security issues
+    - name: Run ESLint
+      run: |
+        npm run lint
+
+    # Set up SSH connection with the EC2 instance
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
 
+    # Deploy to the EC2 instance
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@35.171.166.147 "
