@@ -28,5 +28,6 @@ jobs:
           git pull origin main && \
           npm install && \
           npm run build && \
-          npm install -g serve && \
-          serve -s build -l 3000 &"
+          sudo npm install -g pm2 serve && \
+          pm2 stop all || true && \
+          pm2 start 'serve -s build -l 3000' --name restaurant-app"
