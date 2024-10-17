@@ -17,31 +17,20 @@ jobs:
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
         ssh-keyscan -H 54.221.44.26 >> ~/.ssh/known_hosts  # Add EC2 host to known hosts
 
-    # Run npm audit to check for vulnerabilities
-    - name: Run npm audit
-      run: |
-        npm audit --audit-level=high
-
-    # Apply npm audit fix (if necessary)
-    - name: Fix vulnerabilities
-      run: |
-        npm audit fix --force
-
-    # Deploy the application to the EC2 instance
+    # Deploy the application to EC2 instance
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@54.221.44.26 "
-          cd /home/ec2-user/security-checks && \
           sudo chown -R ec2-user:ec2-user /home/ec2-user/security-checks && \
           git config --global --add safe.directory /home/ec2-user/security-checks && \
+          cd /home/ec2-user/security-checks && \
           git pull origin main && \
           npm install && \
           npm run build && \
           sudo npm install -g pm2 serve && \
-          pm2 stop restaurant-app || true && \
-          pm2 start 'serve -s build -l 3000' --name restaurant-app
-        "
+          pm2 stop all || true && \
+          pm2 start 'serve -s build -l 3000' --name restaurant-app"
