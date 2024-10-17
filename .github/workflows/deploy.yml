@@ -17,12 +17,11 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 54.221.44.26 >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
 
     - name: Deploy to EC2
       run: |
-        ssh -vvv -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@54.221.44.26 "
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@54.221.44.26 "
           sudo chown -R ec2-user:ec2-user /home/ec2-user/security-checks && \
           git config --global --add safe.directory /home/ec2-user/security-checks && \
           cd /home/ec2-user/security-checks && \
