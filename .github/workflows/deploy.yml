@@ -13,18 +13,16 @@ jobs:
     - name: Checkout the code
       uses: actions/checkout@v2
 
-    # Set up SSH connection with the EC2 instance
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
-        ssh-keyscan -H 54.221.44.26 >> ~/.ssh/known_hosts  # Add EC2 host to known hosts
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 54.221.44.26 >> ~/.ssh/known_hosts
 
-    # Deploy the application to EC2 instance
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@54.221.44.26 "
+        ssh -vvv -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@54.221.44.26 "
           sudo chown -R ec2-user:ec2-user /home/ec2-user/security-checks && \
           git config --global --add safe.directory /home/ec2-user/security-checks && \
           cd /home/ec2-user/security-checks && \
