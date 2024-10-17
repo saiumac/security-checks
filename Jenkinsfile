@@ -1,32 +1,36 @@
-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
-
-
 pipeline {
     agent any
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/saiumac/security-checks', credentialsId: 'github-token'
+                git branch: 'main', url: 'https://github.com/saiumac/security-checks.git'
             }
         }
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'  // For installing dependencies (Node.js/React)
+                sh 'npm install'
             }
         }
-        stage('Build Project') {
+        stage('Build App') {
             steps {
-                sh 'npm run build'  // For building the project
+                sh 'npm run build'
             }
         }
-        stage('Test') {
+        stage('Deploy to EC2') {
             steps {
-                sh 'npm test'  // Run tests (if applicable)
-            }
-        }
-        stage('Notify GitHub') {
-            steps {
-                echo 'Build and tests completed. GitHub workflow will handle deployment to EC2.'
+                sshagent(['your-ssh-credentials-id']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ec2-user@54.221.44.26 '
+                    sudo chown -R ec2-user:ec2-user /home/ec2-user/security-checks && \
+                    git pull origin main && \
+                    npm install && \
+                    npm run build && \
+                    sudo npm install -g pm2 serve && \
+                    pm2 stop all || true && \
+                    pm2 start \'serve -s build -l 3000\' --name restaurant-app
+                    '
+                    '''
+                }
             }
         }
     }
