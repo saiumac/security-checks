@@ -16,6 +16,7 @@ jobs:
     # Set up SSH with Base64-decoded key
     - name: Set up SSH
       run: |
+        set -o pipefail
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY_BASE64 }}" | base64 --decode > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
