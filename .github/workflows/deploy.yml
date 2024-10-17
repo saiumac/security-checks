@@ -13,20 +13,17 @@ jobs:
     - name: Checkout the code
       uses: actions/checkout@v2
 
-    # Set up SSH with Base64-decoded key
     - name: Set up SSH
       run: |
         set -o pipefail
         mkdir -p ~/.ssh
-        # Decoding SSH Key
+        # Decoding SSH Key from base64
         echo "${{ secrets.EC2_SSH_KEY_BASE64 }}" | base64 --decode > ~/.ssh/id_rsa
-        # Ensure the key is there and readable
+        # Ensure the key is there and readable (use ls for permissions check)
         ls -la ~/.ssh
-        cat ~/.ssh/id_rsa || echo "Failed to decode key"  # Debugging output
         chmod 600 ~/.ssh/id_rsa  # Set permissions for the private key
         ssh-keyscan -H 18.206.218.236 >> ~/.ssh/known_hosts  # Add EC2 host to known hosts
 
-    # Deploy to the EC2 instance
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@18.206.218.236 "
